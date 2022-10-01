@@ -1,26 +1,16 @@
 import {useInfiniteQuery} from "@tanstack/react-query";
 import React from "react";
-import {FlatList, StatusBar, Text, View} from "react-native";
+import {ActivityIndicator, FlatList, Text, View} from "react-native";
 import {TileList} from "../components/ItemList/TileList";
-import {Tile} from "../components/ItemTile/Tile";
-import {Item, Section} from "../schema/list";
+import {Item, ItemSection} from "../schema/list";
+import {serverUrl} from "../constants";
+import {serverFetch} from "../utils/serverFetch";
+import MainLayout from "../layouts";
 
-const data = {
-  type: "track" as "track",
-  title: "Hello React Native! gjyfjyffjfmhfhyfmhfymf",
-  id: "123",
-  authorName: "John Doe",
-  authorId: "456",
-  thumbnails: [
-    {
-      url: "https://i.ytimg.com/vi/QtF5LmZUe9A/hqdefault.jpg?sqp=-oaymwEXCNACELwBSFryq4qpAwkIARUAAIhCGAE=&rs=AOn4CLAndn6ePGWWamL1F291r95gut9ujQ",
-      width: 200,
-      height: 300,
-    },
-  ],
+type HomePageData = {
+  continuation?: string;
+  sections: ItemSection[];
 };
-
-const serverUrl = "http://192.168.1.4:3000";
 
 const Home = () => {
   const {
@@ -28,17 +18,12 @@ const Home = () => {
     isLoading,
     error,
     fetchNextPage,
-  } = useInfiniteQuery<{
-    continuation: string;
-    sections: Section[];
-  }>(
+  } = useInfiniteQuery(
     ["home"],
-    async ({pageParam}) => {
-      const res = await fetch(
+    ({pageParam}) =>
+      serverFetch<HomePageData>(
         `${serverUrl}/home${pageParam ? `?ctoken=${pageParam}` : ""}`,
-      );
-      return res.json();
-    },
+      ),
     {
       getNextPageParam: lastPage => lastPage?.continuation,
       refetchOnWindowFocus: false,
@@ -52,25 +37,44 @@ const Home = () => {
   );
 
   return (
-    <View>
-      <StatusBar />
+    <MainLayout>
       {isLoading ? (
-        <Text>Loading...</Text>
+        <ActivityIndicator
+          style={{
+            marginVertical: 12,
+          }}
+          size="large"
+        />
       ) : error ? (
-        <Text>{`Error: ${error}`}</Text>
+        <Text style={{color: "#ff0000"}}>{`Error: ${error}`}</Text>
       ) : (
         <FlatList
           data={homeData?.pages.flatMap(page => page.sections)}
           renderItem={({item}) => (
-            <TileList containerStyles={{marginTop: 12}} {...item} />
+            <TileList
+              containerStyles={{marginTop: 12}}
+              {...item}
+              items={item.items as Item[]}
+            />
           )}
           keyExtractor={item => item.title}
           onEndReached={() => fetchNextPage()}
           onEndReachedThreshold={0.5}
-          style={{paddingLeft: 16, marginBottom: 16}}
+          ListFooterComponent={
+            homeData?.pages[homeData?.pages.length - 1].continuation ? (
+              <ActivityIndicator
+                size="large"
+                style={{
+                  marginVertical: 12,
+                }}
+              />
+            ) : (
+              <View style={{height: 16}} />
+            )
+          }
         />
       )}
-    </View>
+    </MainLayout>
   );
 };
 

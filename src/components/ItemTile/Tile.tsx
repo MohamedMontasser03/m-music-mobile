@@ -1,6 +1,18 @@
+import {useQuery} from "@tanstack/react-query";
 import React from "react";
-import {Image, StyleProp, Text, View, ViewStyle} from "react-native";
+import {
+  Image,
+  StyleProp,
+  Text,
+  TouchableOpacity,
+  View,
+  ViewStyle,
+} from "react-native";
+import TrackPlayer from "react-native-track-player";
+import {serverUrl} from "../../constants";
 import {Item} from "../../schema/list";
+import {Track} from "../../schema/track";
+import {selectThumb} from "../../utils/images";
 
 type Props = {
   item: Item;
@@ -8,6 +20,29 @@ type Props = {
 };
 
 export const Tile: React.FC<Props> = ({item, containerStyles}) => {
+  const {refetch} = useQuery<Track>(
+    ["track", item.id],
+    async () => {
+      const res = await fetch(`${serverUrl}/track?id=${item.id}`);
+      return res.json();
+    },
+    {
+      enabled: false,
+      async onSuccess(data) {
+        const urlObj = await fetch(`${serverUrl}/playback/audio?id=${item.id}`);
+        const {url} = await urlObj.json();
+        await TrackPlayer.add({
+          url: `${serverUrl}/audio?url=${url}`,
+          title: data?.title,
+          artist: data?.authorName,
+          artwork: data?.thumbnails[0].url,
+          duration: data?.duration,
+        });
+        await TrackPlayer.play();
+      },
+    },
+  );
+
   return (
     <View
       style={{
@@ -22,7 +57,6 @@ export const Tile: React.FC<Props> = ({item, containerStyles}) => {
         },
         shadowOpacity: 0.25,
         shadowRadius: 3.84,
-        elevation: 5,
         width: 200,
       }}>
       <View>
@@ -38,22 +72,27 @@ export const Tile: React.FC<Props> = ({item, containerStyles}) => {
           }}
           resizeMode="cover"
           source={{
-            uri: item.thumbnails[0].url,
+            uri: selectThumb(item.thumbnails, 200),
           }}
         />
       </View>
       <View>
-        <Text
-          numberOfLines={2}
-          style={{
-            fontSize: 16,
-            fontWeight: "bold",
-            color: "#000",
-            height: 40,
-            marginBottom: 4,
+        <TouchableOpacity
+          onPress={async () => {
+            refetch();
           }}>
-          {item.title}
-        </Text>
+          <Text
+            numberOfLines={2}
+            style={{
+              fontSize: 16,
+              fontWeight: "bold",
+              color: "#000",
+              height: 40,
+              marginBottom: 4,
+            }}>
+            {item.title}
+          </Text>
+        </TouchableOpacity>
         <Text
           numberOfLines={1}
           style={{

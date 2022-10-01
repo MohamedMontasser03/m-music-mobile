@@ -15,7 +15,7 @@ export const itemSchema = z.object({
       url: z.string().url(),
       width: z.number(),
       height: z.number(),
-    })
+    }),
   ),
 });
 
@@ -30,11 +30,14 @@ export const genreItemSchema = z.object({
 
 export type GenreItem = z.infer<typeof genreItemSchema>;
 
-export type Section = {
+type Section<T> = {
   title: string;
   moreLink?: {
     browseId: string;
     params?: string;
   };
-  items: (Item | GenreItem)[];
+  items: T[];
 };
+
+export type ItemSection = Section<Item>;
+export type GenreSection = Section<GenreItem>;

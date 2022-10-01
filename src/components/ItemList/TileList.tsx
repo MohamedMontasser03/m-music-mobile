@@ -1,16 +1,9 @@
 import React from "react";
-import {
-  FlatList,
-  SectionList,
-  StyleProp,
-  Text,
-  TextStyle,
-  View,
-} from "react-native";
-import {Item, Section} from "../../schema/list";
+import {FlatList, StyleProp, Text, TextStyle, View} from "react-native";
+import {ItemSection} from "../../schema/list";
 import {Tile} from "../ItemTile/Tile";
 
-type Props = Section & {
+type Props = ItemSection & {
   containerStyles?: StyleProp<TextStyle>;
 };
 
@@ -24,6 +17,7 @@ export const TileList: React.FC<Props> = ({items, title, containerStyles}) => {
             fontWeight: "bold",
             color: "#000",
             height: 40,
+            marginLeft: 16,
           }}>
           {title}
         </Text>
@@ -31,8 +25,14 @@ export const TileList: React.FC<Props> = ({items, title, containerStyles}) => {
       <FlatList
         data={items}
         horizontal
-        renderItem={({item}) => (
-          <Tile item={item as Item} containerStyles={{marginRight: 16}} />
+        renderItem={({item, index}) => (
+          <Tile
+            item={item}
+            containerStyles={{
+              marginRight: 16,
+              marginLeft: index === 0 ? 16 : 0,
+            }}
+          />
         )}
         keyExtractor={item => item.id}
         showsHorizontalScrollIndicator={false}
