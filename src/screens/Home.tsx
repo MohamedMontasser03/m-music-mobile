@@ -60,6 +60,7 @@ const Home = () => {
           keyExtractor={item => item.title}
           onEndReached={() => fetchNextPage()}
           onEndReachedThreshold={0.5}
+          showsVerticalScrollIndicator={false}
           ListFooterComponent={
             homeData?.pages[homeData?.pages.length - 1].continuation ? (
               <ActivityIndicator

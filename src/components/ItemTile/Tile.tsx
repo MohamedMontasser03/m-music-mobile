@@ -13,6 +13,7 @@ import {serverUrl} from "../../constants";
 import {Item} from "../../schema/list";
 import {Track} from "../../schema/track";
 import {selectThumb} from "../../utils/images";
+import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 
 type Props = {
   item: Item;
@@ -59,14 +60,17 @@ export const Tile: React.FC<Props> = ({item, containerStyles}) => {
         shadowRadius: 3.84,
         width: 200,
       }}>
-      <View>
+      <View
+        style={{
+          position: "relative",
+          marginTop: -16,
+          marginLeft: -16,
+        }}>
         <Image
           style={{
             width: 200,
             height: 200,
             borderRadius: 8,
-            marginTop: -16,
-            marginLeft: -16,
             marginBottom: 8,
             backgroundColor: "#eee",
           }}
@@ -75,24 +79,36 @@ export const Tile: React.FC<Props> = ({item, containerStyles}) => {
             uri: selectThumb(item.thumbnails, 200),
           }}
         />
-      </View>
-      <View>
         <TouchableOpacity
           onPress={async () => {
             refetch();
+          }}
+          style={{
+            position: "absolute",
+            width: 32,
+            height: 32,
+            borderRadius: 16,
+            backgroundColor: "#ff0000",
+            justifyContent: "center",
+            alignItems: "center",
+            bottom: 16,
+            right: -4,
           }}>
-          <Text
-            numberOfLines={2}
-            style={{
-              fontSize: 16,
-              fontWeight: "bold",
-              color: "#000",
-              height: 40,
-              marginBottom: 4,
-            }}>
-            {item.title}
-          </Text>
+          <Icon name="play" size={20} />
         </TouchableOpacity>
+      </View>
+      <View>
+        <Text
+          numberOfLines={2}
+          style={{
+            fontSize: 16,
+            fontWeight: "bold",
+            color: "#000",
+            height: 40,
+            marginBottom: 4,
+          }}>
+          {item.title}
+        </Text>
         <Text
           numberOfLines={1}
           style={{
