@@ -16,7 +16,7 @@ export const TileList: React.FC<Props> = ({items, title, containerStyles}) => {
             fontSize: 20,
             fontWeight: "bold",
             color: "#000",
-            height: 40,
+            height: 30,
             marginLeft: 16,
           }}>
           {title}

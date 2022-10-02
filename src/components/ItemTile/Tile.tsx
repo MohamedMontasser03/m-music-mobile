@@ -8,12 +8,12 @@ import {
   View,
   ViewStyle,
 } from "react-native";
-import TrackPlayer from "react-native-track-player";
 import {serverUrl} from "../../constants";
 import {Item} from "../../schema/list";
 import {Track} from "../../schema/track";
 import {selectThumb} from "../../utils/images";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
+import {usePlayerStore} from "../../app/track-player/playerStore";
 
 type Props = {
   item: Item;
@@ -21,25 +21,21 @@ type Props = {
 };
 
 export const Tile: React.FC<Props> = ({item, containerStyles}) => {
-  const {refetch} = useQuery<Track>(
+  const setQueue = usePlayerStore(state => state.actions.setQueue);
+  const {refetch} = useQuery<Track | Track[]>(
     ["track", item.id],
     async () => {
-      const res = await fetch(`${serverUrl}/track?id=${item.id}`);
+      const res = await fetch(
+        `${serverUrl}/${item.type === "track" ? "track" : "track-list"}?id=${
+          item.id
+        }`,
+      );
       return res.json();
     },
     {
       enabled: false,
       async onSuccess(data) {
-        const urlObj = await fetch(`${serverUrl}/playback/audio?id=${item.id}`);
-        const {url} = await urlObj.json();
-        await TrackPlayer.add({
-          url: `${serverUrl}/audio?url=${url}`,
-          title: data?.title,
-          artist: data?.authorName,
-          artwork: data?.thumbnails[0].url,
-          duration: data?.duration,
-        });
-        await TrackPlayer.play();
+        "id" in data ? setQueue([data as Track]) : setQueue(data as Track[]);
       },
     },
   );
@@ -83,6 +79,7 @@ export const Tile: React.FC<Props> = ({item, containerStyles}) => {
           onPress={async () => {
             refetch();
           }}
+          activeOpacity={0.8}
           style={{
             position: "absolute",
             width: 32,

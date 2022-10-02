@@ -1,5 +1,8 @@
 import {useEffect, useState} from "react";
-import TrackPlayer, {Capability} from "react-native-track-player";
+import TrackPlayer, {
+  AppKilledPlaybackBehavior,
+  Capability,
+} from "react-native-track-player";
 
 export const useLoadAssets = () => {
   const [loaded, setLoaded] = useState(false);
@@ -9,6 +12,10 @@ export const useLoadAssets = () => {
         if (!loaded) {
           await TrackPlayer.setupPlayer();
           await TrackPlayer.updateOptions({
+            android: {
+              appKilledPlaybackBehavior:
+                AppKilledPlaybackBehavior.StopPlaybackAndRemoveNotification,
+            },
             capabilities: [
               Capability.Play,
               Capability.Pause,

@@ -1,14 +1,15 @@
 import TrackPlayer, {Event, State} from "react-native-track-player";
+import {usePlayerStore} from "../app/track-player/playerStore";
 
 let wasPausedByDuck = false;
 
 export async function PlaybackService() {
   TrackPlayer.addEventListener(Event.RemotePause, () => {
-    TrackPlayer.pause();
+    usePlayerStore.getState().actions.pause();
   });
 
   TrackPlayer.addEventListener(Event.RemotePlay, () => {
-    TrackPlayer.play();
+    usePlayerStore.getState().actions.play();
   });
 
   TrackPlayer.addEventListener(Event.RemoteNext, () => {
@@ -52,4 +53,8 @@ export async function PlaybackService() {
       }
     },
   );
+
+  TrackPlayer.addEventListener(Event.PlaybackError, async data => {
+    console.log("Playback error", data);
+  });
 }

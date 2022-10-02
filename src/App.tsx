@@ -5,6 +5,7 @@ import {createBottomTabNavigator} from "@react-navigation/bottom-tabs";
 import Home from "./screens/Home";
 import {useLoadAssets} from "./hooks/useLoadAssets";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
+import {PlayerController} from "./components/player-controller/PlayerController";
 
 const TabNav = createBottomTabNavigator();
 const queryClient = new QueryClient();
@@ -25,6 +26,7 @@ const App = () => {
           }}>
           <TabNav.Screen name="Home" component={Home} />
         </TabNav.Navigator>
+        <PlayerController />
       </NavigationContainer>
     </QueryClientProvider>
   );
