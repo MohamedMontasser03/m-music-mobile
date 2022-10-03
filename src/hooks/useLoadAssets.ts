@@ -12,6 +12,8 @@ export const useLoadAssets = () => {
         if (!loaded) {
           await TrackPlayer.setupPlayer();
           await TrackPlayer.updateOptions({
+            alwaysPauseOnInterruption: true,
+            progressUpdateEventInterval: 1, // seconds
             android: {
               appKilledPlaybackBehavior:
                 AppKilledPlaybackBehavior.StopPlaybackAndRemoveNotification,

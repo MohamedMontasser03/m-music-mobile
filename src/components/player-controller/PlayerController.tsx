@@ -7,9 +7,11 @@ export const PlayerController: React.FC = () => {
   const {
     queue,
     currentTrack: idx,
+    progress,
     isPlaying,
-    actions: {play, pause},
+    actions: {play, pause, playNext, playPrev},
   } = usePlayerStore();
+
   if (!queue.length) return null;
   return (
     <View
@@ -82,12 +84,8 @@ export const PlayerController: React.FC = () => {
             justifyContent: "flex-end",
             alignItems: "center",
           }}>
-          <TouchableWithoutFeedback disabled={idx === 0}>
-            <Icon
-              name="skip-previous"
-              size={30}
-              color={idx === 0 ? "#ccc" : "#000"}
-            />
+          <TouchableWithoutFeedback onPress={() => playPrev()}>
+            <Icon name="skip-previous" size={30} color="#000" />
           </TouchableWithoutFeedback>
           <TouchableWithoutFeedback
             onPress={() => {
@@ -97,7 +95,7 @@ export const PlayerController: React.FC = () => {
           </TouchableWithoutFeedback>
           <TouchableWithoutFeedback
             disabled={idx === queue.length - 1}
-            onPress={() => play(idx + 1)}>
+            onPress={() => playNext()}>
             <Icon
               name="skip-next"
               size={30}
@@ -106,7 +104,13 @@ export const PlayerController: React.FC = () => {
           </TouchableWithoutFeedback>
         </View>
       </View>
-      <View style={{height: 4, backgroundColor: "#766", width: 100 + "%"}} />
+      <View
+        style={{
+          height: 4,
+          backgroundColor: "#766",
+          width: (progress * 100) / queue[idx].duration + "%",
+        }}
+      />
     </View>
   );
 };

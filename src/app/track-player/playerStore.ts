@@ -1,6 +1,7 @@
 import {audioController} from "./audioController";
 import create from "zustand";
 import {Track} from "../../schema/track";
+import {serverUrl} from "../../constants";
 
 type stateType = {
   queue: Track[];
@@ -147,7 +148,7 @@ export const usePlayerStore = create<stateType>()(
           if (newIdx !== undefined && playingData.id !== queue[newIdx]?.id) {
             audioController.clearErrors();
             queue[newIdx]!.url
-              ? audioController?.setSrc(queue[newIdx]!.url!)
+              ? audioController?.setSrc(queue[newIdx]!.url!, newIdx)
               : audioController?.pause();
 
             set({
@@ -204,7 +205,7 @@ export const usePlayerStore = create<stateType>()(
                   isPlaying: true,
                 }));
                 audioController?.setCurrentTime(0);
-                audioController?.setSrc(url);
+                audioController?.setSrc(url, newIdx ?? currentTrack);
                 audioController?.play();
               })
               .catch(err => {
@@ -231,9 +232,11 @@ export const usePlayerStore = create<stateType>()(
             isPlaying,
             loadingState,
             actions: {play, pause},
+            queue,
+            currentTrack,
           } = get();
           if (!audioController || isFetchingUrl(loadingState)) return;
-          if (progress > audioController.getDuration() || progress < 0) return;
+          if (progress > queue[currentTrack].duration || progress < 0) return;
           if (isPlaying && !end) {
             pause();
           }
@@ -351,6 +354,7 @@ export const usePlayerStore = create<stateType>()(
           } = get();
           if (!audioController) return;
           if (new Set(newQueue.map(t => t.id)).size !== newQueue.length) return; // check if there are no duplicates
+          audioController.setPlaylistMetadata(newQueue);
           set({queue: newQueue});
           play(0);
         },
@@ -415,9 +419,9 @@ export const usePlayerStore = create<stateType>()(
 );
 
 const getAudioUrl = async (id: string) => {
-  const query = await fetch(
-    `http://localhost:3000/playback/audio?id=${id}`,
-  ).then(res => res.json());
+  const query = await fetch(`${serverUrl}/playback/audio?id=${id}`).then(res =>
+    res.json(),
+  );
 
   if (!query.url) throw new Error("No url found");
   return {url: query.url, id};

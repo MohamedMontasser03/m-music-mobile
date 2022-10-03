@@ -1,4 +1,5 @@
 import TrackPlayer, {Event, State} from "react-native-track-player";
+import {syncState} from "../app/track-player/audioController";
 import {usePlayerStore} from "../app/track-player/playerStore";
 
 let wasPausedByDuck = false;
@@ -9,29 +10,49 @@ export async function PlaybackService() {
   });
 
   TrackPlayer.addEventListener(Event.RemotePlay, () => {
+    console.log("play");
     usePlayerStore.getState().actions.play();
   });
 
+  TrackPlayer.addEventListener(Event.PlaybackProgressUpdated, ({position}) => {
+    syncState.progress = position;
+    usePlayerStore.getState().actions.syncProgress();
+  });
+
+  TrackPlayer.addEventListener(Event.PlaybackState, ({state}) => {
+    // if(state !== State.) Clear errors
+    syncState.playerState = state;
+    if (state === State.Paused || state === State.Stopped) {
+      usePlayerStore.getState().actions.pause();
+    }
+    if (state === State.Playing) {
+      usePlayerStore.getState().actions.play();
+    }
+  });
+
   TrackPlayer.addEventListener(Event.RemoteNext, () => {
-    TrackPlayer.skipToNext();
+    usePlayerStore.getState().actions.playNext();
   });
 
   TrackPlayer.addEventListener(Event.RemotePrevious, () => {
-    TrackPlayer.skipToPrevious();
+    usePlayerStore.getState().actions.playPrev();
   });
 
-  TrackPlayer.addEventListener(Event.RemoteJumpForward, async event => {
-    const position = (await TrackPlayer.getPosition()) + event.interval;
+  TrackPlayer.addEventListener(Event.RemoteJumpForward, async ({interval}) => {
+    const position = (await TrackPlayer.getPosition()) + interval;
+    syncState.progress = position;
     TrackPlayer.seekTo(position);
   });
 
-  TrackPlayer.addEventListener(Event.RemoteJumpBackward, async event => {
-    const position = (await TrackPlayer.getPosition()) - event.interval;
+  TrackPlayer.addEventListener(Event.RemoteJumpBackward, async ({interval}) => {
+    const position = (await TrackPlayer.getPosition()) - interval;
+    syncState.progress = position;
     TrackPlayer.seekTo(position);
   });
 
-  TrackPlayer.addEventListener(Event.RemoteSeek, event => {
-    TrackPlayer.seekTo(event.position);
+  TrackPlayer.addEventListener(Event.RemoteSeek, ({position}) => {
+    syncState.progress = position;
+    TrackPlayer.seekTo(position);
   });
 
   TrackPlayer.addEventListener(
@@ -51,6 +72,13 @@ export async function PlaybackService() {
           wasPausedByDuck = false;
         }
       }
+    },
+  );
+
+  TrackPlayer.addEventListener(
+    Event.PlaybackTrackChanged,
+    async ({nextTrack, track}) => {
+      console.log("track changed", nextTrack, track);
     },
   );
 
