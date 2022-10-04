@@ -10,7 +10,6 @@ export async function PlaybackService() {
   });
 
   TrackPlayer.addEventListener(Event.RemotePlay, () => {
-    console.log("play");
     usePlayerStore.getState().actions.play();
   });
 
@@ -19,10 +18,14 @@ export async function PlaybackService() {
     usePlayerStore.getState().actions.syncProgress();
   });
 
-  TrackPlayer.addEventListener(Event.PlaybackState, ({state}) => {
-    // if(state !== State.) Clear errors
+  TrackPlayer.addEventListener(Event.PlaybackState, async ({state}) => {
     syncState.playerState = state;
-    if (state === State.Paused || state === State.Stopped) {
+    if (
+      [State.Paused, State.Stopped, State.Playing, State.Ready].includes(state)
+    ) {
+      syncState.errArray = [];
+    }
+    if (state === State.Paused) {
       usePlayerStore.getState().actions.pause();
     }
     if (state === State.Playing) {
@@ -77,12 +80,23 @@ export async function PlaybackService() {
 
   TrackPlayer.addEventListener(
     Event.PlaybackTrackChanged,
-    async ({nextTrack, track}) => {
-      console.log("track changed", nextTrack, track);
+    async ({track, position}) => {
+      if (track !== undefined && track !== null) {
+        const trackData = await TrackPlayer.getTrack(track);
+        const delta = 1.99;
+        if ((trackData?.duration || 0) - position < delta) {
+          return usePlayerStore.getState().actions.playNext();
+        }
+      }
     },
   );
 
   TrackPlayer.addEventListener(Event.PlaybackError, async data => {
-    console.log("Playback error", data);
+    console.error("Playback error", data);
+    syncState.errArray.push({
+      code: data.code,
+      message: data.message,
+    });
+    usePlayerStore.getState().actions.syncLoadingState();
   });
 }

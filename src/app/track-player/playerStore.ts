@@ -148,7 +148,10 @@ export const usePlayerStore = create<stateType>()(
           if (newIdx !== undefined && playingData.id !== queue[newIdx]?.id) {
             audioController.clearErrors();
             queue[newIdx]!.url
-              ? audioController?.setSrc(queue[newIdx]!.url!, newIdx)
+              ? audioController?.setSrc(
+                  `${serverUrl}/audio?url=${queue[newIdx]!.url!}`,
+                  newIdx,
+                )
               : audioController?.pause();
 
             set({
@@ -205,7 +208,10 @@ export const usePlayerStore = create<stateType>()(
                   isPlaying: true,
                 }));
                 audioController?.setCurrentTime(0);
-                audioController?.setSrc(url, newIdx ?? currentTrack);
+                audioController?.setSrc(
+                  `${serverUrl}/audio?url=${url}`,
+                  newIdx ?? currentTrack,
+                );
                 audioController?.play();
               })
               .catch(err => {
@@ -323,6 +329,7 @@ export const usePlayerStore = create<stateType>()(
           if (!audioController) return;
           if (queue.some(t => t.id === track.id)) return;
           set({queue: [...queue, track]});
+          audioController.addTrackMetaToPlaylist(track);
           play(queue.length); // since we haven't updated the queue yet, we need to use the old length
         },
         reorderQueue(from: number, to: number) {
@@ -334,6 +341,7 @@ export const usePlayerStore = create<stateType>()(
           const newQueue = [...queue];
           const [removed] = newQueue.splice(from, 1);
           newQueue.splice(to, 0, removed!);
+          audioController.updatePlaylistMetadata(newQueue);
           set(state => {
             let currentTrack = state.currentTrack;
             if (currentTrack === from) {
@@ -373,6 +381,7 @@ export const usePlayerStore = create<stateType>()(
           const {queue, currentTrack} = get();
           if (!audioController) return;
           if (queue.some(t => t.id === track.id)) return;
+          audioController.addTrackMetaToPlaylist(track, currentTrack + 1);
           set(state => ({
             ...state,
             queue: [
@@ -386,6 +395,7 @@ export const usePlayerStore = create<stateType>()(
           const {queue, currentTrack} = get();
           if (!audioController) return;
           if (idx < 0 || idx >= queue.length) return;
+          audioController.removeTrackMetaFromPlaylist(idx);
           set(state => ({
             ...state,
             queue: [

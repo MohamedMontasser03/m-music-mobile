@@ -17,14 +17,13 @@ export const PlayerController: React.FC = () => {
     <View
       style={{
         position: "absolute",
-        bottom: 0,
+        bottom: 49.2,
         left: 0,
         right: 0,
         height: 70,
-        backgroundColor: "#fff",
+        backgroundColor: "#ffddff",
         borderTopLeftRadius: 20,
         borderTopRightRadius: 20,
-        elevation: 15,
       }}>
       <View
         style={{
