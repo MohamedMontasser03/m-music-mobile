@@ -1,5 +1,5 @@
 import {useInfiniteQuery} from "@tanstack/react-query";
-import React from "react";
+import React, {useEffect, useState} from "react";
 import {ActivityIndicator, FlatList, Text, View} from "react-native";
 import {TileList} from "../components/ItemList/TileList";
 import {Item, ItemSection} from "../schema/list";
@@ -35,6 +35,12 @@ const Home = () => {
       retry: false,
     },
   );
+  const [gt, setGt] = useState("");
+  useEffect(() => {
+    fetch("https://www.google.com")
+      .then(res => res.text())
+      .then(setGt);
+  }, []);
 
   return (
     <MainLayout>
@@ -46,7 +52,7 @@ const Home = () => {
           size="large"
         />
       ) : error ? (
-        <Text style={{color: "#ff0000"}}>{`Error: ${error}`}</Text>
+        <Text style={{color: "#ff0000"}}>{`Error: ${error} ${gt}`}</Text>
       ) : (
         <FlatList
           data={homeData?.pages.flatMap(page => page.sections)}

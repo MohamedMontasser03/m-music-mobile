@@ -5,7 +5,10 @@ import {createBottomTabNavigator} from "@react-navigation/bottom-tabs";
 import Home from "./screens/Home";
 import {useLoadAssets} from "./hooks/useLoadAssets";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
-import {PlayerController} from "./components/player-controller/PlayerController";
+import {GestureHandlerRootView} from "react-native-gesture-handler";
+import layout from "./constants/layout";
+
+import {TabBar} from "./components/tab-bar/TabBar";
 
 const TabNav = createBottomTabNavigator();
 const queryClient = new QueryClient();
@@ -16,18 +19,30 @@ const App = () => {
   if (!loaded) return null;
   return (
     <QueryClientProvider client={queryClient}>
-      <NavigationContainer>
-        <TabNav.Navigator
-          initialRouteName="Home"
-          screenOptions={{
-            tabBarIcon: ({color, size}) => {
-              return <Icon name="home" size={size} color={color} />;
-            },
-          }}>
-          <TabNav.Screen name="Home" component={Home} />
-        </TabNav.Navigator>
-        <PlayerController />
-      </NavigationContainer>
+      <GestureHandlerRootView style={{flex: 1}}>
+        <NavigationContainer>
+          <TabNav.Navigator
+            initialRouteName="Home"
+            tabBar={props => {
+              return <TabBar tabBarProps={props} />;
+            }}
+            screenOptions={{
+              tabBarStyle: {
+                height: layout.tabBarHeight,
+              },
+            }}>
+            <TabNav.Screen
+              name="Home"
+              component={Home}
+              options={{
+                tabBarIcon: ({color, size}) => {
+                  return <Icon name="home" size={size} color={color} />;
+                },
+              }}
+            />
+          </TabNav.Navigator>
+        </NavigationContainer>
+      </GestureHandlerRootView>
     </QueryClientProvider>
   );
 };

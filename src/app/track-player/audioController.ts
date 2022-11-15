@@ -1,5 +1,6 @@
 import TrackPlayer, {State} from "react-native-track-player";
 import {Track} from "../../schema/track";
+import {selectThumb} from "../../utils/images";
 
 type MediaError = {
   code: string;
@@ -108,6 +109,6 @@ const formatTrackToRNTP = (track: Track) => ({
   url: track.url || "",
   title: track.title,
   artist: track.authorName,
-  artwork: track.thumbnails[0].url,
+  artwork: selectThumb(track.thumbnails, 200),
   duration: track.duration,
 });
