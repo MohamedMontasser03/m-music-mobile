@@ -9,6 +9,9 @@ import {GestureHandlerRootView} from "react-native-gesture-handler";
 import layout from "./constants/layout";
 
 import {TabBar} from "./components/tab-bar/TabBar";
+import SearchSuggestions from "./screens/SearchSuggestions";
+import {Header} from "./components/header/Header";
+import SearchResults from "./screens/SearchResults";
 
 const TabNav = createBottomTabNavigator();
 const queryClient = new QueryClient();
@@ -30,6 +33,9 @@ const App = () => {
               tabBarStyle: {
                 height: layout.tabBarHeight,
               },
+              header(props) {
+                return <Header headerProps={props} />;
+              },
             }}>
             <TabNav.Screen
               name="Home"
@@ -40,6 +46,16 @@ const App = () => {
                 },
               }}
             />
+            <TabNav.Group
+              screenOptions={{
+                tabBarButton: () => null,
+                header(props) {
+                  return <Header headerProps={props} showSearch />;
+                },
+              }}>
+              <TabNav.Screen name="SS" component={SearchSuggestions} />
+              <TabNav.Screen name="SR" component={SearchResults} />
+            </TabNav.Group>
           </TabNav.Navigator>
         </NavigationContainer>
       </GestureHandlerRootView>

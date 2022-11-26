@@ -22,6 +22,7 @@ type Props = {
 
 export const Tile: React.FC<Props> = ({item, containerStyles}) => {
   const setQueue = usePlayerStore(state => state.actions.setQueue);
+  const pushTrack = usePlayerStore(state => state.actions.pushTrack);
   const {refetch} = useQuery<Track | Track[]>(
     ["track", item.id],
     async () => {
@@ -34,9 +35,6 @@ export const Tile: React.FC<Props> = ({item, containerStyles}) => {
     },
     {
       enabled: false,
-      async onSuccess(data) {
-        "id" in data ? setQueue([data as Track]) : setQueue(data as Track[]);
-      },
     },
   );
 
@@ -77,7 +75,18 @@ export const Tile: React.FC<Props> = ({item, containerStyles}) => {
         />
         <TouchableOpacity
           onPress={async () => {
-            refetch();
+            refetch().then(async res => {
+              "id" in (res.data ?? {})
+                ? setQueue([res.data as Track])
+                : setQueue(res.data as Track[]);
+            });
+          }}
+          onLongPress={() => {
+            refetch().then(res => {
+              "id" in (res.data ?? {})
+                ? pushTrack(res.data as Track)
+                : pushTrack((res.data as Track[])[0]);
+            });
           }}
           activeOpacity={0.8}
           style={{
